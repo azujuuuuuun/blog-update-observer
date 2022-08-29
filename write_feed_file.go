@@ -7,7 +7,7 @@ import (
 )
 
 func WriteFeedFile(feed Feed) {
-	b, err := json.Marshal(feed)
+	b, err := json.MarshalIndent(feed, "", "  ")
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return

@@ -7,5 +7,5 @@ func main() {
 	if err != nil {
 		fmt.Printf("%#v", err)
 	}
-	fmt.Printf("%#v", feed)
+	WriteFeedFile(feed)
 }

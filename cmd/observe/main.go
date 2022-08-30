@@ -3,9 +3,9 @@ package main
 import "fmt"
 
 func main() {
-	feed, err := FetchFeed()
+	latestFeed, err := FetchLatestFeed()
 	if err != nil {
 		fmt.Printf("%#v", err)
 	}
-	WriteFeedFile(feed)
+	WriteFeedFile(latestFeed)
 }

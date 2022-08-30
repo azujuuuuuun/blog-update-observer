@@ -6,7 +6,7 @@ import (
 	"net/http"
 )
 
-func FetchFeed() (Feed, error) {
+func FetchLatestFeed() (Feed, error) {
 	resp, err := http.Get("https://azujuuuuuun.hatenablog.com/feed")
 	if err != nil {
 		return Feed{}, err

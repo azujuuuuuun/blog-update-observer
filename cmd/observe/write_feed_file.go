@@ -12,7 +12,7 @@ func WriteFeedFile(feed Feed) {
 		fmt.Printf("%#v", err)
 		return
 	}
-	f, err := os.Create("output/feed.json")
+	f, err := os.Create("../../output/feed.json")
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return

@@ -34,3 +34,7 @@ type Feed struct {
 		Author Author `xml:"author" json:"author"`
 	} `xml:"entry" json:"entry"`
 }
+
+func IsBlogUpdated(of Feed, nf Feed) bool {
+	return of.Updated != nf.Updated
+}

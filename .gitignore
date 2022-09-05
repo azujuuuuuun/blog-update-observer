@@ -17,3 +17,5 @@
 output/
 
 .env
+
+docker/data/

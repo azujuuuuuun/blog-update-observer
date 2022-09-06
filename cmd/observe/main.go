@@ -30,5 +30,10 @@ func main() {
 		return
 	}
 
-	WriteFeedFile(latestFeed)
+	err = UploadFeedFile(latestFeed)
+	if err != nil {
+		fmt.Printf("%#v", err)
+		return
+	}
+	fmt.Printf("Uploading feed file succeeded.")
 }

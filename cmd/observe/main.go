@@ -1,9 +1,19 @@
 package main
 
-import "fmt"
+import (
+	"fmt"
+	"log"
+
+	"github.com/joho/godotenv"
+)
 
 func main() {
-	oldFeed, err := FetchLocalOldFeed()
+	err := godotenv.Load("../../.env")
+	if err != nil {
+		log.Fatal("Error loading .env file")
+	}
+
+	oldFeed, err := FetchOldFeed()
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return

@@ -13,29 +13,34 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	oldFeed, err := FetchOldFeed()
+	env := GetEnv()
+
+	feedRepository := NewFeedRepository(env)
+	oldFeed, err := feedRepository.FetchOldFeed()
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return
 	}
 
-	latestFeed, err := FetchLatestFeed()
+	latestFeed, err := feedRepository.FetchLatestFeed()
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return
 	}
 
-	if !IsBlogUpdated(oldFeed, latestFeed) {
+	blog := Blog{}
+	if !blog.IsUpdated(oldFeed, latestFeed) {
 		fmt.Printf("Blog is not updated.")
 		return
 	}
 
-	err = UploadFeedFile(latestFeed)
+	err = feedRepository.UploadFeedFile(latestFeed)
 	if err != nil {
 		fmt.Printf("%#v", err)
 		return
 	}
 	fmt.Printf("Uploading feed file succeeded.")
 
-	CreateRepositoryDispatchEvent()
+	githubApi := NewGitHubApi(env)
+	githubApi.CreateRepositoryDispatchEvent()
 }

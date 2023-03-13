@@ -39,6 +39,8 @@ type Feed struct {
 	Entry    []Entry `xml:"entry" json:"entry"`
 }
 
-func IsBlogUpdated(of Feed, nf Feed) bool {
+type Blog struct{}
+
+func (b Blog) IsUpdated(of Feed, nf Feed) bool {
 	return of.Updated != nf.Updated
 }

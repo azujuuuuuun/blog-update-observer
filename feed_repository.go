@@ -7,7 +7,6 @@ import (
 	"encoding/xml"
 	"io"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/aws/aws-sdk-go/aws"
@@ -17,17 +16,19 @@ import (
 	"github.com/aws/aws-sdk-go/service/s3/s3manager"
 )
 
-func FetchOldFeed() (Feed, error) {
-	endpoint := os.Getenv("STORAGE_API_ENDPOINT")
-	accessKeyID := os.Getenv("STORAGE_ACCESS_KEY_ID")
-	accessKeySecret := os.Getenv("STORAGE_SECRET_ACCESS_KEY")
-	bucket := os.Getenv("GCS_BUCKET_NAME")
-	object := os.Getenv("GCS_OBJECT_NAME")
+type FeedRepository struct {
+	endpoint        string
+	accessKeyID     string
+	accessKeySecret string
+	bucket          string
+	object          string
+}
 
+func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:           aws.String("auto"),
-		Endpoint:         aws.String(endpoint),
-		Credentials:      credentials.NewStaticCredentials(accessKeyID, accessKeySecret, ""),
+		Endpoint:         aws.String(fr.endpoint),
+		Credentials:      credentials.NewStaticCredentials(fr.accessKeyID, fr.accessKeySecret, ""),
 		S3ForcePathStyle: aws.Bool(true),
 	}))
 
@@ -37,7 +38,7 @@ func FetchOldFeed() (Feed, error) {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	output, err := client.GetObjectWithContext(ctx, &s3.GetObjectInput{Bucket: &bucket, Key: &object})
+	output, err := client.GetObjectWithContext(ctx, &s3.GetObjectInput{Bucket: &fr.bucket, Key: &fr.object})
 	if err != nil {
 		return Feed{}, err
 	}
@@ -57,7 +58,7 @@ func FetchOldFeed() (Feed, error) {
 	return feed, nil
 }
 
-func FetchLatestFeed() (Feed, error) {
+func (fr *FeedRepository) FetchLatestFeed() (Feed, error) {
 	resp, err := http.Get("https://azujuuuuuun.hatenablog.com/feed")
 	if err != nil {
 		return Feed{}, err
@@ -75,22 +76,16 @@ func FetchLatestFeed() (Feed, error) {
 	return feed, nil
 }
 
-func UploadFeedFile(feed Feed) error {
+func (fr *FeedRepository) UploadFeedFile(feed Feed) error {
 	b, err := json.MarshalIndent(feed, "", "  ")
 	if err != nil {
 		return err
 	}
 
-	endpoint := os.Getenv("STORAGE_API_ENDPOINT")
-	accessKeyID := os.Getenv("STORAGE_ACCESS_KEY_ID")
-	accessKeySecret := os.Getenv("STORAGE_SECRET_ACCESS_KEY")
-	bucket := os.Getenv("GCS_BUCKET_NAME")
-	object := os.Getenv("GCS_OBJECT_NAME")
-
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:           aws.String("auto"),
-		Endpoint:         aws.String(endpoint),
-		Credentials:      credentials.NewStaticCredentials(accessKeyID, accessKeySecret, ""),
+		Endpoint:         aws.String(fr.endpoint),
+		Credentials:      credentials.NewStaticCredentials(fr.accessKeyID, fr.accessKeySecret, ""),
 		S3ForcePathStyle: aws.Bool(true),
 	}))
 	uploader := s3manager.NewUploader(sess)
@@ -99,9 +94,19 @@ func UploadFeedFile(feed Feed) error {
 	ctx, cancel := context.WithTimeout(ctx, time.Second*10)
 	defer cancel()
 
-	_, err = uploader.UploadWithContext(ctx, &s3manager.UploadInput{Bucket: &bucket, Key: &object, Body: bytes.NewReader(b)})
+	_, err = uploader.UploadWithContext(ctx, &s3manager.UploadInput{Bucket: &fr.bucket, Key: &fr.object, Body: bytes.NewReader(b)})
 	if err != nil {
 		return err
 	}
 	return nil
+}
+
+func NewFeedRepository(env Env) *FeedRepository {
+	return &FeedRepository{
+		endpoint:        env.Gcs.Endpoint,
+		accessKeyID:     env.Gcs.AccessKeyID,
+		accessKeySecret: env.Gcs.AccessKeySecret,
+		bucket:          env.Gcs.Bucket,
+		object:          env.Gcs.Object,
+	}
 }

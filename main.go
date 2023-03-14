@@ -7,8 +7,7 @@ import (
 )
 
 func main() {
-	err := godotenv.Load(".env")
-	if err != nil {
+	if err := godotenv.Load(".env"); err != nil {
 		log.Fatal("Error loading .env file")
 	}
 
@@ -33,15 +32,14 @@ func main() {
 		return
 	}
 
-	err = feedRepository.UploadFeedFile(latestFeed)
-	if err != nil {
+	if err := feedRepository.UploadFeedFile(latestFeed); err != nil {
 		log.Printf("%#v", err)
 		return
 	}
 	log.Println("Uploading feed file succeeded.")
 
 	githubApi := NewGitHubApi(env)
-	if err = githubApi.CreateRepositoryDispatchEvent(); err != nil {
+	if err := githubApi.CreateRepositoryDispatchEvent(); err != nil {
 		log.Printf("%#v", err)
 	}
 	log.Println("Creating repository dispatch event succeeded.")

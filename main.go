@@ -29,7 +29,7 @@ func main() {
 
 	blog := Blog{}
 	if !blog.IsUpdated(oldFeed, latestFeed) {
-		log.Printf("Blog is not updated.")
+		log.Println("Blog is not updated.")
 		return
 	}
 
@@ -38,7 +38,7 @@ func main() {
 		log.Printf("%#v", err)
 		return
 	}
-	log.Printf("Uploading feed file succeeded.")
+	log.Println("Uploading feed file succeeded.")
 
 	githubApi := NewGitHubApi(env)
 	githubApi.CreateRepositoryDispatchEvent()

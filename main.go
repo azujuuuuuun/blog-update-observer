@@ -11,7 +11,10 @@ func main() {
 		log.Fatal("Error loading .env file")
 	}
 
-	env := GetEnv()
+	env, err := GetEnv()
+	if err != nil {
+		log.Fatalf("failed to load env: %v", err)
+	}
 
 	feedRepository := NewFeedRepository(env)
 	oldFeed, err := feedRepository.FetchOldFeed()

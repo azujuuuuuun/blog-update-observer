@@ -1,6 +1,10 @@
 package main
 
-import "os"
+import (
+	"fmt"
+	"os"
+	"strings"
+)
 
 type GitHub struct {
 	AccessToken string
@@ -19,21 +23,28 @@ type Env struct {
 	GitHub GitHub
 }
 
-func GetEnv() Env {
-	gcs := GCS{
-		Endpoint:        os.Getenv("STORAGE_API_ENDPOINT"),
-		AccessKeyID:     os.Getenv("STORAGE_ACCESS_KEY_ID"),
-		AccessKeySecret: os.Getenv("STORAGE_SECRET_ACCESS_KEY"),
-		Bucket:          os.Getenv("GCS_BUCKET_NAME"),
-		Object:          os.Getenv("GCS_OBJECT_NAME"),
+func GetEnv() (Env, error) {
+	var env Env
+	var missing []string
+
+	for k, v := range map[string]*string{
+		"STORAGE_API_ENDPOINT":      &env.Gcs.Endpoint,
+		"STORAGE_ACCESS_KEY_ID":     &env.Gcs.AccessKeyID,
+		"STORAGE_SECRET_ACCESS_KEY": &env.Gcs.AccessKeySecret,
+		"GCS_BUCKET_NAME":           &env.Gcs.Bucket,
+		"GCS_OBJECT_NAME":           &env.Gcs.Object,
+		"GITHUB_ACCESS_TOKEN":       &env.GitHub.AccessToken,
+	} {
+		*v = os.Getenv(k)
+
+		if *v == "" {
+			missing = append(missing, k)
+		}
 	}
 
-	github := GitHub{
-		AccessToken: os.Getenv("GITHUB_ACCESS_TOKEN"),
+	if len(missing) > 0 {
+		return env, fmt.Errorf("missing env(s): " + strings.Join(missing, ", "))
 	}
 
-	return Env{
-		Gcs:    gcs,
-		GitHub: github,
-	}
+	return env, nil
 }

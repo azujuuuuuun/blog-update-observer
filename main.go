@@ -41,5 +41,8 @@ func main() {
 	log.Println("Uploading feed file succeeded.")
 
 	githubApi := NewGitHubApi(env)
-	githubApi.CreateRepositoryDispatchEvent()
+	if err = githubApi.CreateRepositoryDispatchEvent(); err != nil {
+		log.Printf("%#v", err)
+	}
+	log.Println("Creating repository dispatch event succeeded.")
 }

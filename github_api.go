@@ -14,6 +14,10 @@ type RequestBody struct {
 	EventType string `json:"event_type"`
 }
 
+func NewGitHubApi(env Env) *GitHubApi {
+	return &GitHubApi{accessToken: env.GitHub.AccessToken}
+}
+
 func (api *GitHubApi) CreateRepositoryDispatchEvent() error {
 	requestBody := RequestBody{EventType: "blog-updated"}
 	b, err := json.Marshal(requestBody)
@@ -35,8 +39,4 @@ func (api *GitHubApi) CreateRepositoryDispatchEvent() error {
 	defer resp.Body.Close()
 
 	return nil
-}
-
-func NewGitHubApi(env Env) *GitHubApi {
-	return &GitHubApi{accessToken: env.GitHub.AccessToken}
 }

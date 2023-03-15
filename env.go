@@ -6,10 +6,6 @@ import (
 	"strings"
 )
 
-type GitHub struct {
-	AccessToken string
-}
-
 type GCS struct {
 	Endpoint        string
 	AccessKeyID     string
@@ -18,6 +14,9 @@ type GCS struct {
 	Object          string
 }
 
+type GitHub struct {
+	AccessToken string
+}
 type Env struct {
 	Gcs    GCS
 	GitHub GitHub

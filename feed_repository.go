@@ -24,6 +24,16 @@ type FeedRepository struct {
 	object          string
 }
 
+func NewFeedRepository(env Env) *FeedRepository {
+	return &FeedRepository{
+		endpoint:        env.Gcs.Endpoint,
+		accessKeyID:     env.Gcs.AccessKeyID,
+		accessKeySecret: env.Gcs.AccessKeySecret,
+		bucket:          env.Gcs.Bucket,
+		object:          env.Gcs.Object,
+	}
+}
+
 func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:           aws.String("auto"),
@@ -99,14 +109,4 @@ func (fr *FeedRepository) UploadFeedFile(feed Feed) error {
 		return err
 	}
 	return nil
-}
-
-func NewFeedRepository(env Env) *FeedRepository {
-	return &FeedRepository{
-		endpoint:        env.Gcs.Endpoint,
-		accessKeyID:     env.Gcs.AccessKeyID,
-		accessKeySecret: env.Gcs.AccessKeySecret,
-		bucket:          env.Gcs.Bucket,
-		object:          env.Gcs.Object,
-	}
 }

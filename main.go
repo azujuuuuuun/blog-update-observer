@@ -7,19 +7,19 @@ import (
 func main() {
 	env, err := GetEnv()
 	if err != nil {
-		log.Fatalf("failed to load env: %v", err)
+		log.Fatalf("Failed to load env: %v", err)
 	}
 
 	feedRepository := NewFeedRepository(env)
 	oldFeed, err := feedRepository.FetchOldFeed()
 	if err != nil {
-		log.Printf("%#v", err)
+		log.Printf("Failed to fetch old feed: %v", err)
 		return
 	}
 
 	latestFeed, err := feedRepository.FetchLatestFeed()
 	if err != nil {
-		log.Printf("%#v", err)
+		log.Printf("Failed to fetch latest feed: %v", err)
 		return
 	}
 
@@ -30,14 +30,14 @@ func main() {
 	}
 
 	if err := feedRepository.UploadFeedFile(latestFeed); err != nil {
-		log.Printf("%#v", err)
+		log.Printf("Failed to upload feed file: %v", err)
 		return
 	}
 	log.Println("Uploading feed file succeeded.")
 
 	githubApi := NewGitHubApi(env)
 	if err := githubApi.CreateRepositoryDispatchEvent(); err != nil {
-		log.Printf("%#v", err)
+		log.Printf("Failed to create repository dispatch event: %v", err)
 	}
 	log.Println("Creating repository dispatch event succeeded.")
 }

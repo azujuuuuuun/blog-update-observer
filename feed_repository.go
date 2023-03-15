@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"net/http"
 	"time"
@@ -50,19 +51,19 @@ func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 
 	output, err := client.GetObjectWithContext(ctx, &s3.GetObjectInput{Bucket: &fr.bucket, Key: &fr.object})
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to get object: %w", err)
 	}
 
 	defer output.Body.Close()
 	body, err := io.ReadAll(output.Body)
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to read response body: %w", err)
 	}
 
 	var feed Feed
 	err = json.Unmarshal(body, &feed)
 	if err != nil && err != io.EOF {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 
 	return feed, nil
@@ -71,17 +72,17 @@ func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 func (fr *FeedRepository) FetchLatestFeed() (Feed, error) {
 	resp, err := http.Get("https://azujuuuuuun.hatenablog.com/feed")
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to fetch feed: %w", err)
 	}
 	defer resp.Body.Close()
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to read response body: %w", err)
 	}
 	var feed Feed
 	err = xml.Unmarshal(body, &feed)
 	if err != nil {
-		return Feed{}, err
+		return Feed{}, fmt.Errorf("failed to unmarshal response body: %w", err)
 	}
 	return feed, nil
 }
@@ -89,7 +90,7 @@ func (fr *FeedRepository) FetchLatestFeed() (Feed, error) {
 func (fr *FeedRepository) UploadFeedFile(feed Feed) error {
 	b, err := json.MarshalIndent(feed, "", "  ")
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to marshal feed: %w", err)
 	}
 
 	sess := session.Must(session.NewSession(&aws.Config{
@@ -106,7 +107,7 @@ func (fr *FeedRepository) UploadFeedFile(feed Feed) error {
 
 	_, err = uploader.UploadWithContext(ctx, &s3manager.UploadInput{Bucket: &fr.bucket, Key: &fr.object, Body: bytes.NewReader(b)})
 	if err != nil {
-		return err
+		return fmt.Errorf("failed to upload feed: %w", err)
 	}
 	return nil
 }

@@ -55,15 +55,10 @@ func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 	}
 
 	defer output.Body.Close()
-	body, err := io.ReadAll(output.Body)
-	if err != nil {
-		return Feed{}, fmt.Errorf("failed to read response body: %w", err)
-	}
 
 	var feed Feed
-	err = json.Unmarshal(body, &feed)
-	if err != nil && err != io.EOF {
-		return Feed{}, fmt.Errorf("failed to unmarshal response body: %w", err)
+	if err := json.NewDecoder(output.Body).Decode(&feed); err != nil && err != io.EOF {
+		return Feed{}, fmt.Errorf("failed to decode response body: %w", err)
 	}
 
 	return feed, nil
@@ -75,14 +70,9 @@ func (fr *FeedRepository) FetchLatestFeed() (Feed, error) {
 		return Feed{}, fmt.Errorf("failed to fetch feed: %w", err)
 	}
 	defer resp.Body.Close()
-	body, err := io.ReadAll(resp.Body)
-	if err != nil {
-		return Feed{}, fmt.Errorf("failed to read response body: %w", err)
-	}
 	var feed Feed
-	err = xml.Unmarshal(body, &feed)
-	if err != nil {
-		return Feed{}, fmt.Errorf("failed to unmarshal response body: %w", err)
+	if err := xml.NewDecoder(resp.Body).Decode(&feed); err != nil {
+		return Feed{}, fmt.Errorf("failed to decode response body: %w", err)
 	}
 	return feed, nil
 }

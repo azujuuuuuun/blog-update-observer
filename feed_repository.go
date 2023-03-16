@@ -35,7 +35,7 @@ func NewFeedRepository(env Env) *FeedRepository {
 	}
 }
 
-func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
+func (fr *FeedRepository) FetchOldFeed() (*Feed, error) {
 	sess := session.Must(session.NewSession(&aws.Config{
 		Region:           aws.String("auto"),
 		Endpoint:         aws.String(fr.endpoint),
@@ -51,33 +51,33 @@ func (fr *FeedRepository) FetchOldFeed() (Feed, error) {
 
 	output, err := client.GetObjectWithContext(ctx, &s3.GetObjectInput{Bucket: &fr.bucket, Key: &fr.object})
 	if err != nil {
-		return Feed{}, fmt.Errorf("failed to get object: %w", err)
+		return nil, fmt.Errorf("failed to get object: %w", err)
 	}
 
 	defer output.Body.Close()
 
 	var feed Feed
 	if err := json.NewDecoder(output.Body).Decode(&feed); err != nil && err != io.EOF {
-		return Feed{}, fmt.Errorf("failed to decode response body: %w", err)
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
 	}
 
-	return feed, nil
+	return &feed, nil
 }
 
-func (fr *FeedRepository) FetchLatestFeed() (Feed, error) {
+func (fr *FeedRepository) FetchLatestFeed() (*Feed, error) {
 	resp, err := http.Get("https://azujuuuuuun.hatenablog.com/feed")
 	if err != nil {
-		return Feed{}, fmt.Errorf("failed to fetch feed: %w", err)
+		return nil, fmt.Errorf("failed to fetch feed: %w", err)
 	}
 	defer resp.Body.Close()
 	var feed Feed
 	if err := xml.NewDecoder(resp.Body).Decode(&feed); err != nil {
-		return Feed{}, fmt.Errorf("failed to decode response body: %w", err)
+		return nil, fmt.Errorf("failed to decode response body: %w", err)
 	}
-	return feed, nil
+	return &feed, nil
 }
 
-func (fr *FeedRepository) UploadFeedFile(feed Feed) error {
+func (fr *FeedRepository) UploadFeedFile(feed *Feed) error {
 	b, err := json.MarshalIndent(feed, "", "  ")
 	if err != nil {
 		return fmt.Errorf("failed to marshal feed: %w", err)

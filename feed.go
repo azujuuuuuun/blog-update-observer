@@ -41,6 +41,6 @@ type Feed struct {
 
 type Blog struct{}
 
-func (b Blog) IsUpdated(of Feed, nf Feed) bool {
+func (b Blog) IsUpdated(of *Feed, nf *Feed) bool {
 	return of.Updated != nf.Updated
 }

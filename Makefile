@@ -1,3 +1,3 @@
 .PHONY: run
 run:
-	godotenv -f .env go run .
+	${HOME}/go/bin/godotenv -f .env go run .
